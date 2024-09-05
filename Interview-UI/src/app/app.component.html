@@ -1,0 +1,461 @@
+<div class="container mt-5 mb-3">
+  <div class="card shadow-lg rounded">
+    <div class="card-header bg-light">
+      <h5 class="d-inline-block m-0"><i class="las la-user-circle align-middle fs-20 me-2"></i>Student details</h5>
+      <button type="button" class="btn btn-sm btn-outline-primary btn-border float-end"
+        (click)="openAddEditModal(AddEditModal,defaultGuid)">
+        <i class="ri-add-line align-bottom me-1"></i>Add</button>
+
+      <button type="button" (click)="downloadExcel()" class="btn btn-sm btn-outline-success mx-2 float-end">
+        <i class="ri-file-download-line fs-14 me-1 align-bottom"></i>Download
+        Excel File</button>
+    </div>
+    <div class="card-body p-4 pt-2">
+      <div class="row">
+        <div class="col-sm-8"></div>
+        <div class="col-sm-4 my-2 text-end">
+          <div class="input-group">
+            <div class="custom-file w-100">
+              <input type="file" name="file" class="form-control" id="inputGroupFile" #uploadStudentExcel required
+                (change)="importStudent($event)"
+                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4" *ngFor="let student of studentList;">
+          <div class="card p-3 mb-2">
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="d-flex justify-content-between">
+                  <div class="d-flex flex-row align-items-center">
+                    <div class="icon"> <i class="bx bxl-mailchimp"></i> </div>
+                    <div class="ms-2 c-details">
+                      <div class="d-flex gap-2 align-items-center">
+                        <div class="flex-shrink-0">
+                          <img *ngIf="student?.imgPath;" [src]="student.imgPath" height="100" width="100"
+                            class="me-3 rounded-circle avatar-xs" />
+                        </div>
+                        <div class="flex-grow-1">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 text-end">
+                <button type="button" (click)="openAddEditModal(AddEditModal, student.studentId)"
+                  class="btn btn-sm btn-outline-info btn-border me-1 text-end">
+                  <i class="ri-pencil-fill align-bottom"></i>
+                </button>
+                <button type="button" (click)="openSubjectAddEditModal(SubjectAddEditModal,student.studentId)"
+                  class="btn btn-sm btn-outline-dark btn-border me-1 text-end">
+                  <i class="ri-add-line align-bottom"></i>
+                </button>
+
+                <button type="button" (click)="printPDF(student.studentId)"
+                  class="btn btn-sm btn-outline-success btn-border me-1 text-end">
+                  <i class="ri-printer-line align-bottom"></i>
+                </button>
+              </div>
+            </div>
+            <div class="mt-1">
+              <h6 class="heading"> {{student.name}}
+              </h6>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="my-3">
+                    <ul class="list-group">
+                      <li class="list-group-item">{{student.contactNo}}</li>
+                      <li class="list-group-item">{{student.email}}</li>
+                      <li class="list-group-item"> <b>College : </b> {{student.collegeName}}</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="my-3">
+                    <ul class="list-group">
+                      <li class="list-group-item"><b>Total : </b>{{student.total}}</li>
+                      <li class="list-group-item">
+                        <b>Percentage : </b>
+                        <span
+                          class="{{ (student?.percentage ?? 0) <= 40 && (student?.grade === 'C' || student?.grade === 'D' || student?.grade === 'F') ? 'text-danger' : 'text-success' }}">
+                          {{ student?.percentage }} %
+                        </span>
+                      </li>
+                      <li class="list-group-item">
+                        <b>Grade : </b>
+                        <span
+                          class="{{ (student?.percentage ?? 0) <= 40 && (student?.grade === 'C' || student?.grade === 'D' || student?.grade === 'F') ? 'text-danger' : 'text-success' }}">
+                          {{ student?.grade }}
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #AddEditModal role="document" let-modal>
+  <div class="modal-content">
+    <div class="modal-header bg-info p-3">
+      <h5 class="modal-title mt-0 fw-medium text-white">{{mode == 'add' ? 'Add' : 'Update'}} Student</h5>
+      <button type="button" class="btn-close" aria-hidden="true" (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <form (ngSubmit)="onSubmit(studentForm)" [formGroup]="studentForm">
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                          'is-invalid': (studentFormControl['studentName'].dirty && studentFormControl['studentName'].errors) || (studentFormControl['studentName'].touched && studentFormControl['studentName'].errors) || (submitted && studentFormControl['studentName'].errors)}"
+                formControlName="studentName" placeholder="" required>
+              <label>Enter name<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentFormControl['studentName'].dirty && studentFormControl['studentName'].errors) || studentFormControl['studentName'].touched || (submitted && studentFormControl['studentName']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentFormControl['studentName'].errors && studentFormControl['studentName'].errors['required']">
+                  Name is required
+                </label>
+                <label
+                  *ngIf="studentFormControl['studentName'].errors && studentFormControl['studentName'].errors['pattern']">
+                  Student name must contain only lowercase alphabetical characters.
+                </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control" [maxlength]="10" [minlength]="10"
+                [ngClass]="{
+                          'is-invalid': (studentFormControl['studentContactNo'].dirty && studentFormControl['studentContactNo'].errors) || (studentFormControl['studentContactNo'].touched && studentFormControl['studentContactNo'].errors) || (submitted && studentFormControl['studentContactNo'].errors)}"
+                formControlName="studentContactNo" placeholder="" required>
+              <label>Enter mobile number<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentFormControl['studentContactNo'].dirty && studentFormControl['studentContactNo'].errors) || (studentFormControl['studentContactNo'].touched && studentFormControl['studentContactNo'].errors) || (submitted && studentFormControl['studentContactNo']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentFormControl['studentContactNo'].errors && studentFormControl['studentContactNo'].errors['required']">
+                  Mobile number is required
+                </label>
+                <label *ngIf="studentFormControl['studentContactNo'].errors &&
+                                studentFormControl['studentContactNo'].errors['minlength'] || studentFormControl['studentContactNo'].errors &&
+                                studentFormControl['studentContactNo'].errors['maxlength'] || studentFormControl['studentContactNo'].errors &&
+                                studentFormControl['studentContactNo'].errors['pattern']">
+                  Mobile number is invalid
+                </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="email" class="form-control"
+                [ngClass]="{
+                                   'is-invalid': (studentFormControl['studentEmail'].dirty && studentFormControl['studentEmail'].errors) || (studentFormControl['studentEmail'].touched && studentFormControl['studentEmail'].errors) || (submitted && studentFormControl['studentEmail'].errors)}"
+                formControlName="studentEmail" placeholder="" required>
+              <label>Enter email<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentFormControl['studentEmail'].dirty && studentFormControl['studentEmail'].errors) || (studentFormControl['studentEmail'].touched && studentFormControl['studentEmail'].errors) || (submitted && studentFormControl['studentEmail']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentFormControl['studentEmail'].errors && studentFormControl['studentEmail'].errors['required']">
+                  Email is required
+                </label>
+                <label
+                  *ngIf="studentFormControl['studentEmail'].errors && studentFormControl['studentEmail'].errors['email']">
+                  Email is invalid
+                </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                          'is-invalid': (studentFormControl['collegeName'].dirty && studentFormControl['collegeName'].errors) || (studentFormControl['collegeName'].touched && studentFormControl['collegeName'].errors) || (submitted && studentFormControl['collegeName'].errors)}"
+                formControlName="collegeName" placeholder="" required>
+              <label>Enter college name<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentFormControl['collegeName'].dirty && studentFormControl['collegeName'].errors) || studentFormControl['collegeName'].touched || (submitted && studentFormControl['collegeName']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentFormControl['collegeName'].errors && studentFormControl['collegeName'].errors['required']">
+                  College name is required
+                </label>
+                <label
+                  *ngIf="studentFormControl['collegeName'].errors && studentFormControl['collegeName'].errors['pattern']">
+                  College name must contain only lowercase alphabetical characters.
+                </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                          'is-invalid': (studentFormControl['enrolmentNumber'].dirty && studentFormControl['enrolmentNumber'].errors) || (studentFormControl['enrolmentNumber'].touched && studentFormControl['enrolmentNumber'].errors) || (submitted && studentFormControl['enrolmentNumber'].errors)}"
+                formControlName="enrolmentNumber" placeholder="" required>
+              <label>Enter enrolment number<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentFormControl['enrolmentNumber'].dirty && studentFormControl['enrolmentNumber'].errors) || studentFormControl['enrolmentNumber'].touched || (submitted && studentFormControl['enrolmentNumber']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentFormControl['enrolmentNumber'].errors && studentFormControl['enrolmentNumber'].errors['required']">
+                  Enrolment number is required
+                </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="form-group mb-2">
+              <input class="form-control" formControlName="imageFile" type="file" accept="image/*"
+                (change)="profileImageChange($event)" />
+              <span *ngIf="submitted && studentFormControl['imageFile']?.errors" class="text-danger fs-10">
+                <label
+                  *ngIf="studentFormControl['imageFile']!.errors && studentFormControl['imageFile']!.errors['required']">
+                  Profile image is required
+                </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12"
+            *ngIf="defaultGuid !== studentId || (profileImageUrl && profileImageUrl !== '')">
+            <div class="form-group mb-2">
+              <label class="form-label d-block mb-2">Profile Photo</label>
+              <img [src]="profileImageUrl" height="100" width="100" class="rounded-circle">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-dark btn-border" (click)="modal.close('Close click')"><i
+            class="ri-close-line align-bottom me-1"></i>Close</button>
+        <button type="submit" class="btn btn-sm btn-outline-success btn-border"> <i
+            class="ri-save-line align-bottom me-1"></i>
+          {{mode == 'add' ? 'Save' : 'Update'}}</button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+
+<ng-template #SubjectAddEditModal role="document" let-modal>
+  <div class="modal-content">
+    <div class="modal-header bg-soft-info p-3">
+      <h5 class="modal-title mt-0 fw-bold">{{mode == 'add' ? 'Add' : 'Update'}} student subject and mark details</h5>
+      <button type="button" class="btn-close" aria-hidden="true" (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <form (ngSubmit)="onStudentSubjectSubmit(studentSubjectForm)" [formGroup]="studentSubjectForm">
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                          'is-invalid': (studentSubjectFormControl['subject1'].dirty && studentSubjectFormControl['subject1'].errors) || (studentSubjectFormControl['subject1'].touched && studentSubjectFormControl['subject1'].errors) || (submitted && studentSubjectFormControl['subject1'].errors)}"
+                formControlName="subject1" placeholder="" required>
+              <label>Enter subject name 1<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentSubjectFormControl['subject1'].dirty && studentSubjectFormControl['subject1'].errors) || studentSubjectFormControl['subject1'].touched || (submitted && studentSubjectFormControl['subject1']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentSubjectFormControl['subject1'].errors && studentSubjectFormControl['subject1'].errors['required']">
+                  Subject 1 name is required
+                </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                          'is-invalid': (studentSubjectFormControl['subject1Mark'].dirty && studentSubjectFormControl['subject1Mark'].errors) || (studentSubjectFormControl['subject1Mark'].touched && studentSubjectFormControl['subject1Mark'].errors) || (submitted && studentSubjectFormControl['subject1Mark'].errors)}"
+                formControlName="subject1Mark" placeholder="" required>
+              <label>Enter marks of subject 1<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentSubjectFormControl['subject1Mark'].dirty && studentSubjectFormControl['subject1Mark'].errors) || studentSubjectFormControl['subject1Mark'].touched || (submitted && studentSubjectFormControl['subject1Mark']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentSubjectFormControl['subject1Mark'].errors && studentSubjectFormControl['subject1Mark'].errors['required']">
+                  Subject 1 mark is required
+                </label>
+                <label *ngIf="studentSubjectFormControl['subject1Mark']?.errors?.['subject1Mark']"> Mark value must be
+                  between 0
+                  to 100 </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                              'is-invalid': (studentSubjectFormControl['subject2'].dirty && studentSubjectFormControl['subject2'].errors) || (studentSubjectFormControl['subject2'].touched && studentSubjectFormControl['subject2'].errors) || (submitted && studentSubjectFormControl['subject2'].errors)}"
+                formControlName="subject2" placeholder="" required>
+              <label>Enter subject name 2<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentSubjectFormControl['subject2'].dirty && studentSubjectFormControl['subject2'].errors) || studentSubjectFormControl['subject2'].touched || (submitted && studentSubjectFormControl['subject2']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentSubjectFormControl['subject2'].errors && studentSubjectFormControl['subject2'].errors['required']">
+                  Subject 2 name is required
+                </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                              'is-invalid': (studentSubjectFormControl['subject2Mark'].dirty && studentSubjectFormControl['subject2Mark'].errors) || (studentSubjectFormControl['subject2Mark'].touched && studentSubjectFormControl['subject2Mark'].errors) || (submitted && studentSubjectFormControl['subject2Mark'].errors)}"
+                formControlName="subject2Mark" placeholder="" required>
+              <label>Enter marks of subject 2<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentSubjectFormControl['subject2Mark'].dirty && studentSubjectFormControl['subject2Mark'].errors) || studentSubjectFormControl['subject2Mark'].touched || (submitted && studentSubjectFormControl['subject2Mark']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentSubjectFormControl['subject2Mark'].errors && studentSubjectFormControl['subject2Mark'].errors['required']">
+                  Subject 2 mark is required
+                </label>
+                <label *ngIf="studentSubjectFormControl['subject2Mark']?.errors?.['subject2Mark']"> Mark value must be
+                  between 0
+                  to 100 </label>
+              </span>
+            </div>
+          </div>
+          <!-- Subject 3 -->
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                    'is-invalid': (studentSubjectFormControl['subject3'].dirty && studentSubjectFormControl['subject3'].errors) || (studentSubjectFormControl['subject3'].touched && studentSubjectFormControl['subject3'].errors) || (submitted && studentSubjectFormControl['subject3'].errors)}"
+                formControlName="subject3" placeholder="" required>
+              <label>Enter subject name 3<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentSubjectFormControl['subject3'].dirty && studentSubjectFormControl['subject3'].errors) || studentSubjectFormControl['subject3'].touched || (submitted && studentSubjectFormControl['subject3']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentSubjectFormControl['subject3'].errors && studentSubjectFormControl['subject3'].errors['required']">
+                  Subject 3 name is required
+                </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                    'is-invalid': (studentSubjectFormControl['subject3Mark'].dirty && studentSubjectFormControl['subject3Mark'].errors) || (studentSubjectFormControl['subject3Mark'].touched && studentSubjectFormControl['subject3Mark'].errors) || (submitted && studentSubjectFormControl['subject3Mark'].errors)}"
+                formControlName="subject3Mark" placeholder="" required>
+              <label>Enter marks of subject 3<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentSubjectFormControl['subject3Mark'].dirty && studentSubjectFormControl['subject3Mark'].errors) || studentSubjectFormControl['subject3Mark'].touched || (submitted && studentSubjectFormControl['subject3Mark']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentSubjectFormControl['subject3Mark'].errors && studentSubjectFormControl['subject3Mark'].errors['required']">
+                  Subject 3 mark is required
+                </label>
+                <label *ngIf="studentSubjectFormControl['subject3Mark']?.errors?.['subject3Mark']"> Mark value must be
+                  between 0
+                  to 100 </label>
+              </span>
+            </div>
+          </div>
+
+          <!-- Subject 4 -->
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                    'is-invalid': (studentSubjectFormControl['subject4'].dirty && studentSubjectFormControl['subject4'].errors) || (studentSubjectFormControl['subject4'].touched && studentSubjectFormControl['subject4'].errors) || (submitted && studentSubjectFormControl['subject4'].errors)}"
+                formControlName="subject4" placeholder="" required>
+              <label>Enter subject name 4<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentSubjectFormControl['subject4'].dirty && studentSubjectFormControl['subject4'].errors) || studentSubjectFormControl['subject4'].touched || (submitted && studentSubjectFormControl['subject4']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentSubjectFormControl['subject4'].errors && studentSubjectFormControl['subject4'].errors['required']">
+                  Subject 4 name is required
+                </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                    'is-invalid': (studentSubjectFormControl['subject4Mark'].dirty && studentSubjectFormControl['subject4Mark'].errors) || (studentSubjectFormControl['subject4Mark'].touched && studentSubjectFormControl['subject4Mark'].errors) || (submitted && studentSubjectFormControl['subject4Mark'].errors)}"
+                formControlName="subject4Mark" placeholder="" required>
+              <label>Enter marks of subject 4<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentSubjectFormControl['subject4Mark'].dirty && studentSubjectFormControl['subject4Mark'].errors) || studentSubjectFormControl['subject4Mark'].touched || (submitted && studentSubjectFormControl['subject4Mark']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentSubjectFormControl['subject4Mark'].errors && studentSubjectFormControl['subject4Mark'].errors['required']">
+                  Subject 4 mark is required
+                </label>
+                <label *ngIf="studentSubjectFormControl['subject4Mark']?.errors?.['subject4Mark']"> Mark value must be
+                  between 0
+                  to 100 </label>
+              </span>
+            </div>
+          </div>
+
+          <!-- Subject 5 -->
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                    'is-invalid': (studentSubjectFormControl['subject5'].dirty && studentSubjectFormControl['subject5'].errors) || (studentSubjectFormControl['subject5'].touched && studentSubjectFormControl['subject5'].errors) || (submitted && studentSubjectFormControl['subject5'].errors)}"
+                formControlName="subject5" placeholder="" required>
+              <label>Enter subject name 5<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentSubjectFormControl['subject5'].dirty && studentSubjectFormControl['subject5'].errors) || studentSubjectFormControl['subject5'].touched || (submitted && studentSubjectFormControl['subject5']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentSubjectFormControl['subject5'].errors && studentSubjectFormControl['subject5'].errors['required']">
+                  Subject 5 name is required
+                </label>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12">
+            <div class="form-floating mb-2">
+              <input type="text" class="form-control"
+                [ngClass]="{
+                    'is-invalid': (studentSubjectFormControl['subject5Mark'].dirty && studentSubjectFormControl['subject5Mark'].errors) || (studentSubjectFormControl['subject5Mark'].touched && studentSubjectFormControl['subject5Mark'].errors) || (submitted && studentSubjectFormControl['subject5Mark'].errors)}"
+                formControlName="subject5Mark" placeholder="" required>
+              <label>Enter marks of subject 5<span class="text-danger ms-1">*</span></label>
+              <span
+                *ngIf="(studentSubjectFormControl['subject5Mark'].dirty && studentSubjectFormControl['subject5Mark'].errors) || studentSubjectFormControl['subject5Mark'].touched || (submitted && studentSubjectFormControl['subject5Mark']?.errors)"
+                class="text-danger fs-10">
+                <label
+                  *ngIf="studentSubjectFormControl['subject5Mark'].errors && studentSubjectFormControl['subject5Mark'].errors['required']">
+                  Subject 5 mark is required
+                </label>
+                <label *ngIf="studentSubjectFormControl['subject5Mark']?.errors?.['subject5Mark']"> Mark value must be
+                  between 0
+                  to 100 </label>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-dark btn-border" (click)="modal.close('Close click')"><i
+            class="ri-close-line align-bottom me-1"></i>Close</button>
+        <button type="submit" class="btn btn-sm btn-outline-success btn-border"> <i
+            class="ri-save-line align-bottom me-1"></i>
+          {{mode == 'add' ? 'Save' : 'Update'}}</button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+<router-outlet></router-outlet>

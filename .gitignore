@@ -1,0 +1,17 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/Interview-API/Interview-API/.vs
+/Interview-API/Interview-API/bin/Debug/net8.0
+/Interview-API/Interview-API/Migrations
+/Interview-API/Interview-API/obj
+/Interview-API/Interview-API/Properties
+/Interview-API/Interview-API/wwwroot/Images/StudentImages
+/Interview-API/Interview.Entity/bin/Debug/net8.0
+/Interview-API/Interview.Entity/obj
+/Interview-API/Interview.Repository/bin/Debug/net8.0
+/Interview-API/Interview.Repository/obj
+/Interview-API/Interview.Service/bin/Debug/net8.0
+/Interview-API/Interview.Service/obj
+/Interview-UI/package-lock.json
